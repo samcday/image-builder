@@ -80,6 +80,12 @@ deps-gce:
 	hack/ensure-ansible.sh
 	hack/ensure-packer.sh
 
+.PHONY: deps-hcloud
+deps-hcloud: ## Installs/checks dependencies for Hetzner Cloud builds
+deps-hcloud:
+	hack/ensure-ansible.sh
+	hack/ensure-packer.sh
+
 .PHONY: deps-ova
 deps-ova: ## Installs/checks dependencies for OVA builds
 deps-ova:
@@ -244,6 +250,8 @@ AZURE_BUILD_SIG_GEN2_NAMES ?= azure-sig-ubuntu-1804-gen2 azure-sig-ubuntu-2004-g
 
 DO_BUILD_NAMES 			?=	do-centos-7 do-ubuntu-1804 do-ubuntu-2004
 
+HCLOUD_BUILD_NAMES			?= hcloud-centos-7 hcloud-centos-8 hcloud-ubuntu-1804 hcloud-ubuntu-2004
+
 QEMU_FLATCAR_BUILD_NAMES	?=	qemu-flatcar
 QEMU_BUILD_NAMES			?=	qemu-ubuntu-1804 qemu-ubuntu-2004
 
@@ -276,6 +284,8 @@ AZURE_VALIDATE_SIG_TARGETS	:= $(addprefix validate-,$(AZURE_BUILD_SIG_NAMES))
 AZURE_VALIDATE_SIG_GEN2_TARGETS	:= $(addprefix validate-,$(AZURE_BUILD_SIG_GEN2_NAMES))
 DO_BUILD_TARGETS 	:= $(addprefix build-,$(DO_BUILD_NAMES))
 DO_VALIDATE_TARGETS 	:= $(addprefix validate-,$(DO_BUILD_NAMES))
+HCLOUD_BUILD_TARGETS	:= $(addprefix build-,$(HCLOUD_BUILD_NAMES))
+HCLOUD_VALIDATE_TARGETS	:= $(addprefix validate-,$(HCLOUD_BUILD_NAMES))
 QEMU_FLATCAR_BUILD_TARGETS	:= $(addprefix build-,$(QEMU_FLATCAR_BUILD_NAMES))
 QEMU_FLATCAR_VALIDATE_TARGETS	:= $(addprefix validate-,$(QEMU_FLATCAR_BUILD_NAMES))
 QEMU_BUILD_TARGETS	:= $(addprefix build-,$(QEMU_BUILD_NAMES))
@@ -379,6 +389,10 @@ $(DO_BUILD_TARGETS): deps-do
 .PHONY: $(DO_VALIDATE_TARGETS)
 $(DO_VALIDATE_TARGETS): deps-do
 	packer validate $(PACKER_NODE_FLAGS) -var-file="$(abspath packer/digitalocean/$(subst validate-do-,,$@).json)" $(ABSOLUTE_PACKER_VAR_FILES) packer/digitalocean/packer.json
+
+.PHONY: $(HCLOUD_BUILD_TARGETS)
+$(HCLOUD_BUILD_TARGETS): deps-hcloud
+	packer build $(PACKER_NODE_FLAGS) -var-file="$(abspath packer/hcloud/$(subst build-hcloud-,,$@).json)" $(ABSOLUTE_PACKER_VAR_FILES) packer/hcloud/packer.json
 
 .PHONY: $(QEMU_FLATCAR_BUILD_TARGETS)
 $(QEMU_FLATCAR_BUILD_TARGETS): deps-qemu
